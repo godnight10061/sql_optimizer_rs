@@ -1582,60 +1582,6 @@ SELECT * FROM orders WHERE id = 2;
     }
 
     #[test]
-    fn dialect_postgres_ilike_collects_column() {
-        let mut statements = Parser::parse_sql(
-            &PostgreSqlDialect {},
-            "SELECT * FROM users WHERE name ILIKE 'bob%'",
-        )
-        .unwrap();
-        let statement = statements.remove(0);
-        let mut candidates = BTreeSet::new();
-        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
-        assert_eq!(
-            candidates,
-            vec![("users".to_string(), "name".to_string())]
-                .into_iter()
-                .collect()
-        );
-    }
-
-    #[test]
-    fn dialect_mysql_rlike_collects_column() {
-        let mut statements = Parser::parse_sql(
-            &MySqlDialect {},
-            "SELECT * FROM users WHERE name RLIKE 'bob'",
-        )
-        .unwrap();
-        let statement = statements.remove(0);
-        let mut candidates = BTreeSet::new();
-        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
-        assert_eq!(
-            candidates,
-            vec![("users".to_string(), "name".to_string())]
-                .into_iter()
-                .collect()
-        );
-    }
-
-    #[test]
-    fn dialect_sqlite_like_collects_column() {
-        let mut statements = Parser::parse_sql(
-            &SQLiteDialect {},
-            "SELECT * FROM users WHERE name LIKE 'bob%'",
-        )
-        .unwrap();
-        let statement = statements.remove(0);
-        let mut candidates = BTreeSet::new();
-        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
-        assert_eq!(
-            candidates,
-            vec![("users".to_string(), "name".to_string())]
-                .into_iter()
-                .collect()
-        );
-    }
-
-    #[test]
     fn analyze_suggests_indexes_for_where_column() {
         let result = analyze("SELECT * FROM users WHERE age > 18").unwrap();
         assert_eq!(result.index_suggestions.len(), 1);

@@ -29,17 +29,13 @@ jobs:
         run: cargo test --workspace --locked
 
   dialects:
-    name: dialect smoke (${{ matrix.dialect }})
+    name: dialect smoke
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dialect: [postgres, mysql, sqlite]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - name: test
-        run: cargo test -p sql_optimizer --locked dialect_${{ matrix.dialect }}
+        run: cargo test -p sql_optimizer --locked collect_index_candidates_from_multiple_dialects
 
   coverage:
     name: coverage (tarpaulin)
