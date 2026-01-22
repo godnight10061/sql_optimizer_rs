@@ -1663,4 +1663,157 @@ SELECT * FROM orders WHERE id = 2;
         assert!(a.1 <= a.0);
         assert!(a.2 <= 99);
     }
+
+    #[test]
+    fn analyze_warns_when_no_index_opportunities_detected() {
+        let result = analyze("SELECT 1").unwrap();
+        assert!(result.index_suggestions.is_empty());
+        assert_eq!(
+            result.warnings,
+            vec!["no obvious index opportunities detected".to_string()]
+        );
+    }
+
+    #[test]
+    fn rewrite_refuses_when_from_or_join_is_derived() {
+        let query = "SELECT t.* FROM (SELECT * FROM orders) t JOIN users u ON t.user_id = u.id WHERE u.active = true";
+        let result = rewrite(query).unwrap();
+        assert!(result.rewritten.is_none());
+
+        let query =
+            "SELECT o.* FROM orders o JOIN (SELECT * FROM users) u ON o.user_id = u.id WHERE u.active = true";
+        let result = rewrite(query).unwrap();
+        assert!(result.rewritten.is_none());
+    }
+
+    #[test]
+    fn rewrite_refuses_when_projection_is_right_table_wildcard() {
+        let query =
+            "SELECT u.* FROM orders o JOIN users u ON o.user_id = u.id WHERE u.active = true";
+        let result = rewrite(query).unwrap();
+        assert!(result.rewritten.is_none());
+    }
+
+    #[test]
+    fn rewrite_join_to_in_works_when_on_clause_is_reversed() {
+        let query =
+            "SELECT o.* FROM orders o JOIN users u ON u.id = o.user_id WHERE u.active = true";
+        let rewritten = rewrite(query).unwrap().rewritten.unwrap();
+        assert_eq!(
+            rewritten,
+            "SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHERE active = true)"
+        );
+    }
+
+    #[test]
+    fn detect_n1_excludes_templates_below_threshold_and_evicts_window() {
+        let log = r#"
+SELECT * FROM a WHERE id = 1;
+SELECT * FROM b WHERE id = 1;
+SELECT * FROM c WHERE id = 1;
+"#;
+        let report = detect_n1_from_log(
+            log,
+            N1Options {
+                threshold: 2,
+                window: 2,
+            },
+        );
+        assert!(report.findings.is_empty());
+    }
+
+    #[test]
+    fn collect_index_candidates_traverses_ctes() {
+        let statement = parse_single_statement(
+            "WITH recent_orders AS (SELECT * FROM orders WHERE user_id > 0) SELECT * FROM users WHERE id IN (SELECT user_id FROM recent_orders WHERE user_id > 0)",
+        )
+        .unwrap();
+        let mut candidates = BTreeSet::new();
+        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
+
+        let expected = vec![
+            ("orders".to_string(), "user_id".to_string()),
+            ("recent_orders".to_string(), "user_id".to_string()),
+            ("users".to_string(), "id".to_string()),
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+        assert_eq!(candidates, expected);
+    }
+
+    #[test]
+    fn collect_index_candidates_traverses_set_operations() {
+        let statement = parse_single_statement(
+            "SELECT * FROM users WHERE age > 1 UNION SELECT * FROM users WHERE name LIKE 'a%'",
+        )
+        .unwrap();
+        let mut candidates = BTreeSet::new();
+        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
+
+        let expected = vec![
+            ("users".to_string(), "age".to_string()),
+            ("users".to_string(), "name".to_string()),
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+        assert_eq!(candidates, expected);
+    }
+
+    #[test]
+    fn collect_index_candidates_handles_more_predicate_variants() {
+        let statement = parse_single_statement(
+            "SELECT * FROM users u WHERE NOT u.active AND u.age BETWEEN 1 AND 10 AND u.id IN (1, 2, 3) AND u.name IS NULL AND CAST(u.age AS INT) > 0 AND upper(u.name) = 'BOB' AND (u.id, u.age) = (1, 2) AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)",
+        )
+        .unwrap();
+        let mut candidates = BTreeSet::new();
+        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
+
+        let expected = vec![
+            ("orders".to_string(), "user_id".to_string()),
+            ("u".to_string(), "id".to_string()),
+            ("users".to_string(), "active".to_string()),
+            ("users".to_string(), "age".to_string()),
+            ("users".to_string(), "id".to_string()),
+            ("users".to_string(), "name".to_string()),
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+        assert_eq!(candidates, expected);
+    }
+
+    #[test]
+    fn collect_subqueries_traverses_projection_expressions() {
+        let statement = parse_single_statement(
+            "SELECT (SELECT 1) + 1 AS x, coalesce((SELECT 2), 0) AS y, CASE WHEN (SELECT 1) = 1 THEN (SELECT 2) ELSE 0 END AS z FROM users",
+        )
+        .unwrap();
+        let mut candidates = BTreeSet::new();
+        collect_index_candidates_from_statement(&statement, &mut candidates).unwrap();
+        assert!(candidates.is_empty());
+    }
+
+    #[test]
+    fn table_factor_name_extracts_table_name() {
+        let statement = parse_single_statement("SELECT * FROM users").unwrap();
+        let select = match &statement {
+            Statement::Query(query) => match query.body.as_ref() {
+                SetExpr::Select(select) => select.as_ref(),
+                _ => panic!("expected SELECT"),
+            },
+            _ => panic!("expected query statement"),
+        };
+        assert_eq!(
+            table_factor_name(&select.from[0].relation),
+            Some("users".to_string())
+        );
+    }
+
+    #[test]
+    fn strip_qualifier_does_not_strip_other_qualifiers() {
+        let expr = Expr::CompoundIdentifier(vec![
+            sqlparser::ast::Ident::new("o"),
+            sqlparser::ast::Ident::new("id"),
+        ]);
+        assert_eq!(strip_qualifier(expr.clone(), "u"), expr);
+    }
 }
