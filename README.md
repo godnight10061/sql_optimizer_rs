@@ -50,6 +50,22 @@ WARNING: heuristic rewrite: verify projection if you relied on JOINed columns
 OPTIMIZED: SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHERE active = true)
 ```
 
+## Comparison (rough)
+
+Notes:
+- The `sqlopt` speed is an example from the `index_suggestion` benchmark in the `Benchmarks` section. Results vary by machine; run it locally to reproduce.
+- `sqlopt`'s N+1 detection is log-based (repeated query templates), not ORM-aware instrumentation.
+- `sqlopt`'s index suggestions are based on query structure (e.g., columns in `WHERE` clauses) and do not use database statistics.
+- `sqlparser-rs` is a parser library; a speed comparison is not applicable.
+- `Bullet` and `Prosopite` are runtime instrumentation tools, so a direct speed comparison is not applicable.
+
+| Tool | Language | Speed (1M queries) | N+1 Detect | Index Suggest | CLI |
+| --- | --- | ------------------: | :---: | :---: | :---: |
+| [sqlopt](https://github.com/sqlopt-rs/sql_optimizer_rs) | Rust | See benchmarks | Yes (heuristic) | Yes (heuristic) | Yes |
+| [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | N/A | No | No | No |
+| [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
+| [Prosopite](https://github.com/charkost/prosopite) | Ruby | N/A | Yes | No | No |
+
 ## Benchmarks
 
 Run the index suggestion benchmark:
@@ -64,6 +80,6 @@ Result (this machine):
 | --- | ---: | ---: | ---: |
 | index_suggestion | 1,000,000 | 8.864s | 112,814 queries/s |
 
-For a rough comparison point, at 1,000 queries/s a Python tool would take ~16.7 minutes for 1,000,000 queries.
+At 1,000 queries/s, processing 1,000,000 queries takes ~16.7 minutes.
 
 See `DESIGN.md` for the MVP boundaries and testing approach.
