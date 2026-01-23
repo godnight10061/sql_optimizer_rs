@@ -68,7 +68,7 @@ jobs:
       - name: install tarpaulin
         run: cargo install cargo-tarpaulin --version 0.35.1 --locked
       - name: coverage
-        run: cargo tarpaulin -p sql_optimizer --locked --out Html --output-dir tarpaulin-report --fail-under 80
+        run: cargo tarpaulin -p sql_optimizer --locked --out Html --output-dir tarpaulin-report --fail-under 80 --exclude-files crates/sql_optimizer/benches/*
       - uses: actions/upload-artifact@v4
         with:
           name: tarpaulin-report
