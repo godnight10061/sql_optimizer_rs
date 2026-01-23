@@ -58,7 +58,7 @@ Notes:
 - `sqlparser-rs` is a parser library; a speed comparison is not applicable.
 
 | Tool | Language | Speed (1M queries) | N+1 Detect | Index Suggest | CLI |
-| --- | --- | ------------------ | --- | --- | --- |
+| --- | --- | ------------------: | :---: | :---: | :---: |
 | sqlopt (this repo) | Rust | ~8.9s | Yes (heuristic) | Yes | Yes |
 | [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | N/A | No | No | No |
 | [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
