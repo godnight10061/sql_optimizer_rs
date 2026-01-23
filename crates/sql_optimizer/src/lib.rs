@@ -387,10 +387,14 @@ impl N1Detector {
 
         if self.window_queue.len() == self.window {
             if let Some(oldest) = self.window_queue.pop_front() {
-                if let Some(count) = self.window_counts.get_mut(&oldest) {
-                    *count = count.saturating_sub(1);
-                    if *count == 0 {
-                        self.window_counts.remove(&oldest);
+                if let std::collections::hash_map::Entry::Occupied(mut entry) =
+                    self.window_counts.entry(oldest)
+                {
+                    let new_count = entry.get().saturating_sub(1);
+                    if new_count == 0 {
+                        entry.remove();
+                    } else {
+                        *entry.get_mut() = new_count;
                     }
                 }
             }
