@@ -53,7 +53,7 @@ OPTIMIZED: SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHE
 ## Comparison (rough)
 
 Notes:
-- The `sqlopt` speed is an example from the `index_suggestion` benchmark. Results vary by machine/runner; see CI artifacts in the [CI workflow](https://github.com/sqlopt-rs/sql_optimizer_rs/actions/workflows/ci.yml) for latest data.
+- The `sqlopt` speed is an example from the `index_suggestion` benchmark. Results vary by machine/runner; see CI artifacts (artifact: `index-suggestion-bench`) in the [CI workflow](https://github.com/sqlopt-rs/sql_optimizer_rs/actions/workflows/ci.yml) for latest data.
 - `sqlopt`'s N+1 detection is log-based (repeated query templates), not ORM-aware instrumentation.
 - `sqlparser-rs` is a parser library; a speed comparison is not applicable.
 - `Bullet` and `Prosopite` are runtime instrumentation tools, so a direct speed comparison is not applicable.
