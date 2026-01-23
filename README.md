@@ -50,6 +50,19 @@ WARNING: heuristic rewrite: verify projection if you relied on JOINed columns
 OPTIMIZED: SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHERE active = true)
 ```
 
+## Comparison (rough)
+
+Notes:
+- Speed (1M q) is only measured for `sqlopt` via `index_suggestion`; results vary by machine/runner.
+- N+1 detection here is log-based (repeated query templates), not ORM-aware instrumentation.
+
+| Tool | Language | Speed (1M q) | N+1 Detect | Index Suggest | CLI |
+| --- | --- | --- | --- | --- | --- |
+| sqlopt (this repo) | Rust | ~8.9s (example; see Benchmarks) | Yes (heuristic) | Yes | Yes |
+| sqlparser-rs | Rust | parse only | No | No | No |
+| Bullet / Prosopite | Ruby | N/A | Yes | No | No |
+| SQL++ | Rust | query exec | N/A | N/A | N/A |
+
 ## Benchmarks
 
 Run the index suggestion benchmark:
@@ -64,6 +77,6 @@ Result (this machine):
 | --- | ---: | ---: | ---: |
 | index_suggestion | 1,000,000 | 8.864s | 112,814 queries/s |
 
-For a rough comparison point, at 1,000 queries/s a Python tool would take ~16.7 minutes for 1,000,000 queries.
+At 1,000 queries/s, processing 1,000,000 queries takes ~16.7 minutes.
 
 See `DESIGN.md` for the MVP boundaries and testing approach.
