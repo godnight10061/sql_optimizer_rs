@@ -53,7 +53,7 @@ OPTIMIZED: SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHE
 ## Comparison (rough)
 
 Notes:
-- Speed (1M q) is only measured for `sqlopt` via `index_suggestion`; results vary by machine/runner.
+- The `sqlopt` speed is an example from the `index_suggestion` benchmark. Results vary by machine/runner; see CI artifacts for latest data.
 - N+1 detection here is log-based (repeated query templates), not ORM-aware instrumentation.
 
 | Tool | Language | Speed (1M q) | N+1 Detect | Index Suggest | CLI |
