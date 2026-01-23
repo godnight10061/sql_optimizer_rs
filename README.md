@@ -60,7 +60,8 @@ Notes:
 | --- | --- | --- | --- | --- | --- |
 | sqlopt (this repo) | Rust | ~8.9s (example; see Benchmarks) | Yes (heuristic) | Yes | Yes |
 | [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | parse only | No | No | No |
-| [Bullet](https://github.com/flyerhzm/bullet) / [Prosopite](https://github.com/charkost/prosopite) | Ruby | N/A | Yes | No | No |
+| [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
+| [Prosopite](https://github.com/charkost/prosopite) | Ruby | N/A | Yes | No | No |
 
 ## Benchmarks
 
