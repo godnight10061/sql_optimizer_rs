@@ -390,11 +390,10 @@ impl N1Detector {
                 if let std::collections::hash_map::Entry::Occupied(mut entry) =
                     self.window_counts.entry(oldest)
                 {
-                    let new_count = entry.get().saturating_sub(1);
-                    if new_count == 0 {
+                    let count = entry.get_mut();
+                    *count = count.saturating_sub(1);
+                    if *count == 0 {
                         entry.remove();
-                    } else {
-                        *entry.get_mut() = new_count;
                     }
                 }
             }
