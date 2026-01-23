@@ -37,6 +37,26 @@ jobs:
       - name: test
         run: cargo test -p sql_optimizer --locked collect_index_candidates_from_multiple_dialects
 
+  bench-index-suggestion:
+    name: bench (index_suggestion, 1_000_000)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: run bench
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p bench-output
+          cargo bench -p sql_optimizer --locked --bench index_suggestion -- 1_000_000 | tee bench-output/index_suggestion.txt
+      - name: upload bench output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: index-suggestion-bench
+          path: bench-output/index_suggestion.txt
+          if-no-files-found: warn
+
   coverage:
     name: coverage (tarpaulin)
     runs-on: ubuntu-latest
@@ -48,7 +68,7 @@ jobs:
       - name: install tarpaulin
         run: cargo install cargo-tarpaulin --version 0.35.1 --locked
       - name: coverage
-        run: cargo tarpaulin -p sql_optimizer --locked --out Html --output-dir tarpaulin-report --fail-under 80
+        run: cargo tarpaulin -p sql_optimizer --locked --out Html --output-dir tarpaulin-report --fail-under 80 --exclude-files crates/sql_optimizer/benches/*
       - uses: actions/upload-artifact@v4
         with:
           name: tarpaulin-report
