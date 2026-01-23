@@ -1229,6 +1229,7 @@ fn strip_qualifier_in_order_by_expr(order_by: &mut sqlparser::ast::OrderByExpr, 
 mod tests {
     use super::*;
     use sqlparser::dialect::{MySqlDialect, PostgreSqlDialect, SQLiteDialect};
+    use std::io::Cursor;
 
     #[test]
     fn normalize_query_template_replaces_literals_and_numbers() {
@@ -1291,6 +1292,24 @@ SELECT * FROM users WHERE id = 5;
             report.findings[0].template,
             "select * from users where id = ?"
         );
+    }
+
+    #[test]
+    fn detect_n1_from_reader_matches_detect_n1_from_log() {
+        let log = r#"
+SELECT * FROM users WHERE id = 1;
+SELECT * FROM users WHERE id = 2;
+SELECT * FROM users WHERE id = 3;
+SELECT * FROM users WHERE id = 4;
+SELECT * FROM users WHERE id = 5;
+"#;
+        let opts = N1Options {
+            threshold: 5,
+            window: 10,
+        };
+        let from_log = detect_n1_from_log(log, opts.clone());
+        let from_reader = detect_n1_from_reader(Cursor::new(log), opts).expect("read report");
+        assert_eq!(from_reader, from_log);
     }
 
     #[test]
