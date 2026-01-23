@@ -59,7 +59,7 @@ Notes:
 
 | Tool | Language | Speed (1M queries) | N+1 Detect | Index Suggest | CLI |
 | --- | --- | ------------------: | :---: | :---: | :---: |
-| sqlopt (this repo) | Rust | ~8.9s | Yes (heuristic) | Yes | Yes |
+| sqlopt | Rust | ~8.9s | Yes (heuristic) | Yes (heuristic) | Yes |
 | [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | N/A | No | No | No |
 | [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
 | [Prosopite](https://github.com/charkost/prosopite) | Ruby | N/A | Yes | No | No |
