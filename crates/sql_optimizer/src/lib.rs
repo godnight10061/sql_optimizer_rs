@@ -384,13 +384,7 @@ impl N1Detector {
 
         *self.total_counts.entry(template.clone()).or_default() += 1;
 
-        self.window_queue.push_back(template.clone());
-        {
-            let entry = self.window_counts.entry(template.clone()).or_default();
-            *entry += 1;
-        }
-
-        if self.window_queue.len() > self.window {
+        if self.window_queue.len() == self.window {
             if let Some(oldest) = self.window_queue.pop_front() {
                 if let Some(count) = self.window_counts.get_mut(&oldest) {
                     *count = count.saturating_sub(1);
@@ -401,7 +395,12 @@ impl N1Detector {
             }
         }
 
-        let current = self.window_counts.get(&template).copied().unwrap_or(0);
+        self.window_queue.push_back(template.clone());
+        let current = {
+            let entry = self.window_counts.entry(template.clone()).or_default();
+            *entry += 1;
+            *entry
+        };
         self.max_in_window
             .entry(template)
             .and_modify(|max| *max = (*max).max(current))
