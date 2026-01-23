@@ -55,11 +55,12 @@ OPTIMIZED: SELECT o.* FROM orders o WHERE o.user_id IN (SELECT id FROM users WHE
 Notes:
 - The `sqlopt` speed is an example from the `index_suggestion` benchmark. Results vary by machine/runner; see CI artifacts in the [CI workflow](https://github.com/sqlopt-rs/sql_optimizer_rs/actions/workflows/ci.yml) for latest data.
 - `sqlopt`'s N+1 detection is log-based (repeated query templates), not ORM-aware instrumentation.
+- `sqlparser-rs` is a parser library; a speed comparison is not applicable.
 
 | Tool | Language | Speed (1M queries) | N+1 Detect | Index Suggest | CLI |
 | --- | --- | ------------------ | --- | --- | --- |
 | sqlopt (this repo) | Rust | ~8.9s | Yes (heuristic) | Yes | Yes |
-| [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | parse only | No | No | No |
+| [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | N/A | No | No | No |
 | [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
 | [Prosopite](https://github.com/charkost/prosopite) | Ruby | N/A | Yes | No | No |
 
