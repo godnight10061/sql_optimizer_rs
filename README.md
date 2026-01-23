@@ -56,8 +56,8 @@ Notes:
 - The `sqlopt` speed is an example from the `index_suggestion` benchmark. Results vary by machine/runner; see CI artifacts in the [CI workflow](https://github.com/sqlopt-rs/sql_optimizer_rs/actions/workflows/ci.yml) for latest data.
 - `sqlopt`'s N+1 detection is log-based (repeated query templates), not ORM-aware instrumentation.
 
-| Tool | Language | Speed (1M q) | N+1 Detect | Index Suggest | CLI |
-| --- | --- | --- | --- | --- | --- |
+| Tool | Language | Speed (1M queries) | N+1 Detect | Index Suggest | CLI |
+| --- | --- | ------------------ | --- | --- | --- |
 | sqlopt (this repo) | Rust | ~8.9s | Yes (heuristic) | Yes | Yes |
 | [sqlparser-rs](https://github.com/sqlparser-rs/sqlparser-rs) | Rust | parse only | No | No | No |
 | [Bullet](https://github.com/flyerhzm/bullet) | Ruby | N/A | Yes | No | No |
