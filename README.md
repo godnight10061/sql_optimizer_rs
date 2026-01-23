@@ -61,7 +61,7 @@ Notes:
 | sqlopt (this repo) | Rust | ~8.9s (example; see Benchmarks) | Yes (heuristic) | Yes | Yes |
 | sqlparser-rs | Rust | parse only | No | No | No |
 | Bullet / Prosopite | Ruby | N/A | Yes | No | No |
-| SQL++ | Rust | query exec | N/A | N/A | N/A |
+| SQL++ | Rust | N/A | N/A | N/A | N/A |
 
 ## Benchmarks
 
